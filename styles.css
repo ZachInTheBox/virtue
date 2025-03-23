@@ -1,0 +1,404 @@
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* App Container */
+.app-container {
+    max-width: 600px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.app-header {
+    background-color: #1e3a8a;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.app-header h1 {
+    margin-bottom: 10px;
+}
+
+.notification-toggle {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.notification-toggle label {
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #81b0ff;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #81b0ff;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.slider.round {
+    border-radius: 24px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* Main Content */
+.app-content {
+    flex: 1;
+    padding: 16px;
+}
+
+/* Week Navigation */
+.week-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.nav-button {
+    background-color: #1e3a8a;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#current-week {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Virtue Card */
+.virtue-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.virtue-name {
+    font-size: 22px;
+    color: #1e3a8a;
+    margin-bottom: 8px;
+}
+
+.virtue-desc {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.toggle-button {
+    background-color: #e6f7ff;
+    color: #1e3a8a;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.examples-container {
+    margin-bottom: 15px;
+}
+
+.examples-header {
+    font-size: 16px;
+    color: #1e3a8a;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.examples-list {
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+.examples-list li {
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 15px;
+}
+
+.examples-list li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #1e3a8a;
+}
+
+.avoid-list {
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+.avoid-list li {
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 15px;
+    color: #d32f2f;
+}
+
+.avoid-list li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #d32f2f;
+}
+
+/* Day Grid */
+.day-grid {
+    margin-top: 20px;
+}
+
+.day-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.day-label {
+    width: 40px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: #666;
+}
+
+.day-cells {
+    display: flex;
+    justify-content: space-between;
+}
+
+.day-cell {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.day-cell.success {
+    background-color: #dcfce7;
+    border-color: #22c55e;
+}
+
+.day-cell.failure {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+}
+
+/* Notes Section */
+.notes-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notes-section h3 {
+    color: #1e3a8a;
+    margin-bottom: 10px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 16px;
+}
+
+/* All Virtues */
+.all-virtues {
+    background-color: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.all-virtues h3 {
+    color: #1e3a8a;
+    margin-bottom: 15px;
+}
+
+.virtue-list {
+    list-style-type: none;
+}
+
+.virtue-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.virtue-item:last-child {
+    border-bottom: none;
+}
+
+.virtue-item.active {
+    background-color: #f0f7ff;
+    border-left: 4px solid #1e3a8a;
+    padding-left: 10px;
+    border-radius: 4px;
+}
+
+.virtue-item-number {
+    font-weight: bold;
+    color: #1e3a8a;
+    margin-right: 5px;
+}
+
+.virtue-item-name {
+    font-weight: bold;
+}
+
+.virtue-item-desc {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 90%;
+    width: 400px;
+}
+
+.modal-content h3 {
+    color: #1e3a8a;
+    margin-bottom: 15px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.button.primary {
+    background-color: #1e3a8a;
+    color: white;
+}
+
+.button.secondary {
+    background-color: #f1f5f9;
+    color: #1e3a8a;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .day-label, .day-cell {
+        width: 36px;
+    }
+}
