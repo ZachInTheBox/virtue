@@ -242,379 +242,457 @@ let trackingData = [];
 let notes = {};
 let notificationsEnabled = false;
 
-// DOM Elements
-const currentWeekElement = document.getElementById('current-week');
-const virtueNameElement = document.getElementById('virtue-name');
-const virtueDescElement = document.getElementById('virtue-desc');
-const successExamplesList = document.getElementById('success-examples');
-const avoidExamplesList = document.getElementById('avoid-examples');
-const examplesContainer = document.getElementById('examples-container');
-const toggleExamplesButton = document.getElementById('toggle-examples');
-const dayCellsContainer = document.getElementById('day-cells');
-const virtueNotesElement = document.getElementById('virtue-notes');
-const virtueListElement = document.getElementById('virtue-list');
-const prevWeekButton = document.getElementById('prev-week');
-const nextWeekButton = document.getElementById('next-week');
-const notificationSwitch = document.getElementById('notification-switch');
-const notificationModal = document.getElementById('notification-modal');
-const allowNotificationsButton = document.getElementById('allow-notifications');
-const denyNotificationsButton = document.getElementById('deny-notifications');
+// DOM Elements - Ensure we wait for DOM content to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    const currentWeekElement = document.getElementById('current-week');
+    const virtueNameElement = document.getElementById('virtue-name');
+    const virtueDescElement = document.getElementById('virtue-desc');
+    const successExamplesList = document.getElementById('success-examples');
+    const avoidExamplesList = document.getElementById('avoid-examples');
+    const examplesContainer = document.getElementById('examples-container');
+    const toggleExamplesButton = document.getElementById('toggle-examples');
+    const dayCellsContainer = document.getElementById('day-cells');
+    const virtueNotesElement = document.getElementById('virtue-notes');
+    const virtueListElement = document.getElementById('virtue-list');
+    const prevWeekButton = document.getElementById('prev-week');
+    const nextWeekButton = document.getElementById('next-week');
+    const notificationSwitch = document.getElementById('notification-switch');
+    const notificationModal = document.getElementById('notification-modal');
+    const allowNotificationsButton = document.getElementById('allow-notifications');
+    const denyNotificationsButton = document.getElementById('deny-notifications');
 
-// Initialize the app
-function initializeApp() {
+    // Initialize the app
+    initializeApp();
+
+    // Initialize tracking data
+    function initializeTrackingData() {
+        return Array.from({ length: 13 }, (_, i) => ({
+            weekIndex: i,
+            days: Array(7).fill(null)
+        }));
+    }
+
     // Load data from local storage
-    loadData();
-    
-    // Render the UI
-    updateWeekDisplay();
-    updateVirtueDisplay();
-    renderDayCells();
-    renderVirtueList();
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Check for notification permission
-    checkNotificationPermission();
-}
-
-// Load data from local storage
-function loadData() {
-    const storedData = localStorage.getItem('virtues-tracker-data');
-    
-    if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        currentWeekIndex = parsedData.currentWeekIndex || 0;
-        trackingData = parsedData.trackingData || initializeTrackingData();
-        notes = parsedData.notes || {};
-        notificationsEnabled = parsedData.notificationsEnabled || false;
-    } else {
-        trackingData = initializeTrackingData();
-    }
-    
-    // Update notification switch state
-    notificationSwitch.checked = notificationsEnabled;
-}
-
-// Initialize tracking data
-function initializeTrackingData() {
-    return Array.from({ length: 13 }, (_, i) => ({
-        weekIndex: i,
-        days: Array(7).fill(null)
-    }));
-}
-
-// Save data to local storage
-function saveData() {
-    const dataToSave = {
-        currentWeekIndex,
-        trackingData,
-        notes,
-        notificationsEnabled
-    };
-    
-    localStorage.setItem('virtues-tracker-data', JSON.stringify(dataToSave));
-}
-
-// Update the week display (Week X)
-function updateWeekDisplay() {
-    currentWeekElement.textContent = `Week ${currentWeekIndex + 1}`;
-}
-
-// Update the virtue display
-function updateVirtueDisplay() {
-    const currentVirtue = virtuesData[currentWeekIndex];
-    
-    // Update name and description
-    virtueNameElement.textContent = currentVirtue.name;
-    virtueDescElement.textContent = currentVirtue.desc;
-    
-    // Update examples
-    successExamplesList.innerHTML = '';
-    avoidExamplesList.innerHTML = '';
-    
-    currentVirtue.examples.forEach(example => {
-        const li = document.createElement('li');
-        li.textContent = example;
-        successExamplesList.appendChild(li);
-    });
-    
-    currentVirtue.avoid.forEach(example => {
-        const li = document.createElement('li');
-        li.textContent = example;
-        avoidExamplesList.appendChild(li);
-    });
-    
-    // Update notes
-    const noteKey = `virtue_${currentWeekIndex}`;
-    virtueNotesElement.value = notes[noteKey] || '';
-}
-
-// Render day cells
-function renderDayCells() {
-    dayCellsContainer.innerHTML = '';
-    
-    const currentWeekData = trackingData[currentWeekIndex];
-    
-    for (let i = 0; i < 7; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'day-cell';
-        cell.textContent = i + 1;
-        cell.dataset.day = i;
+    function loadData() {
+        const storedData = localStorage.getItem('virtues-tracker-data');
         
-        // Apply appropriate class based on tracking status
-        if (currentWeekData.days[i] === true) {
-            cell.classList.add('success');
-        } else if (currentWeekData.days[i] === false) {
-            cell.classList.add('failure');
+        if (storedData) {
+            try {
+                const parsedData = JSON.parse(storedData);
+                currentWeekIndex = parsedData.currentWeekIndex || 0;
+                trackingData = parsedData.trackingData || initializeTrackingData();
+                notes = parsedData.notes || {};
+                notificationsEnabled = parsedData.notificationsEnabled || false;
+            } catch (e) {
+                console.error('Error parsing stored data:', e);
+                trackingData = initializeTrackingData();
+            }
+        } else {
+            trackingData = initializeTrackingData();
         }
         
-        // Add click event
-        cell.addEventListener('click', () => toggleDayStatus(i));
+        // Update notification switch state
+        if (notificationSwitch) {
+            notificationSwitch.checked = notificationsEnabled;
+        }
+    }
+
+    // Save data to local storage
+    function saveData() {
+        const dataToSave = {
+            currentWeekIndex,
+            trackingData,
+            notes,
+            notificationsEnabled
+        };
         
-        dayCellsContainer.appendChild(cell);
+        localStorage.setItem('virtues-tracker-data', JSON.stringify(dataToSave));
+        console.log('Data saved to localStorage');
     }
-}
 
-// Toggle the status of a day
-function toggleDayStatus(dayIndex) {
-    const currentWeekData = trackingData[currentWeekIndex];
-    
-    // Cycle through: null -> true -> false -> null
-    if (currentWeekData.days[dayIndex] === null) {
-        currentWeekData.days[dayIndex] = true;
-    } else if (currentWeekData.days[dayIndex] === true) {
-        currentWeekData.days[dayIndex] = false;
-    } else {
-        currentWeekData.days[dayIndex] = null;
+    // Initialize the app
+    function initializeApp() {
+        console.log('Initializing app...');
+        
+        // Load data from local storage
+        loadData();
+        
+        // Render the UI
+        updateWeekDisplay();
+        updateVirtueDisplay();
+        renderDayCells();
+        renderVirtueList();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Check for notification permission
+        checkNotificationPermission();
+        
+        console.log('App initialized');
     }
-    
-    // Update the UI and save
-    renderDayCells();
-    saveData();
-}
 
-// Render the full list of virtues
-function renderVirtueList() {
-    virtueListElement.innerHTML = '';
-    
-    virtuesData.forEach((virtue, index) => {
-        const li = document.createElement('li');
-        li.className = 'virtue-item';
-        if (index === currentWeekIndex) {
-            li.classList.add('active');
+    // Update the week display (Week X)
+    function updateWeekDisplay() {
+        if (currentWeekElement) {
+            currentWeekElement.textContent = `Week ${currentWeekIndex + 1}`;
+        }
+    }
+
+    // Update the virtue display
+    function updateVirtueDisplay() {
+        const currentVirtue = virtuesData[currentWeekIndex];
+        
+        // Update name and description
+        if (virtueNameElement) {
+            virtueNameElement.textContent = currentVirtue.name;
+        }
+        if (virtueDescElement) {
+            virtueDescElement.textContent = currentVirtue.desc;
         }
         
-        const numberSpan = document.createElement('span');
-        numberSpan.className = 'virtue-item-number';
-        numberSpan.textContent = `${index + 1}.`;
+        // Update examples
+        if (successExamplesList) {
+            successExamplesList.innerHTML = '';
+            
+            currentVirtue.examples.forEach(example => {
+                const li = document.createElement('li');
+                li.textContent = example;
+                successExamplesList.appendChild(li);
+            });
+        }
         
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'virtue-item-name';
-        nameSpan.textContent = ` ${virtue.name}: `;
+        if (avoidExamplesList) {
+            avoidExamplesList.innerHTML = '';
+            
+            currentVirtue.avoid.forEach(example => {
+                const li = document.createElement('li');
+                li.textContent = example;
+                avoidExamplesList.appendChild(li);
+            });
+        }
         
-        const descDiv = document.createElement('div');
-        descDiv.className = 'virtue-item-desc';
-        descDiv.textContent = virtue.desc;
+        // Update notes
+        const noteKey = `virtue_${currentWeekIndex}`;
+        if (virtueNotesElement) {
+            virtueNotesElement.value = notes[noteKey] || '';
+        }
+    }
+
+    // Render day cells
+    function renderDayCells() {
+        if (!dayCellsContainer) {
+            console.error('Day cells container not found!');
+            return;
+        }
         
-        li.appendChild(numberSpan);
-        li.appendChild(nameSpan);
-        li.appendChild(descDiv);
+        dayCellsContainer.innerHTML = '';
         
-        // Add click event to switch to this virtue
-        li.addEventListener('click', () => {
-            switchToVirtue(index);
+        const currentWeekData = trackingData[currentWeekIndex];
+        
+        for (let i = 0; i < 7; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            cell.textContent = i + 1;
+            cell.dataset.day = i;
+            
+            // Apply appropriate class based on tracking status
+            if (currentWeekData.days[i] === true) {
+                cell.classList.add('success');
+            } else if (currentWeekData.days[i] === false) {
+                cell.classList.add('failure');
+            }
+            
+            // Add click event
+            cell.addEventListener('click', function() {
+                toggleDayStatus(i);
+            });
+            
+            dayCellsContainer.appendChild(cell);
+        }
+    }
+
+    // Toggle the status of a day
+    function toggleDayStatus(dayIndex) {
+        const currentWeekData = trackingData[currentWeekIndex];
+        
+        // Cycle through: null -> true -> false -> null
+        if (currentWeekData.days[dayIndex] === null) {
+            currentWeekData.days[dayIndex] = true;
+        } else if (currentWeekData.days[dayIndex] === true) {
+            currentWeekData.days[dayIndex] = false;
+        } else {
+            currentWeekData.days[dayIndex] = null;
+        }
+        
+        // Update the UI and save
+        renderDayCells();
+        saveData();
+    }
+
+    // Render the full list of virtues
+    function renderVirtueList() {
+        if (!virtueListElement) {
+            console.error('Virtue list element not found!');
+            return;
+        }
+        
+        virtueListElement.innerHTML = '';
+        
+        virtuesData.forEach((virtue, index) => {
+            const li = document.createElement('li');
+            li.className = 'virtue-item';
+            if (index === currentWeekIndex) {
+                li.classList.add('active');
+            }
+            
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'virtue-item-number';
+            numberSpan.textContent = `${index + 1}.`;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'virtue-item-name';
+            nameSpan.textContent = ` ${virtue.name}: `;
+            
+            const descDiv = document.createElement('div');
+            descDiv.className = 'virtue-item-desc';
+            descDiv.textContent = virtue.desc;
+            
+            li.appendChild(numberSpan);
+            li.appendChild(nameSpan);
+            li.appendChild(descDiv);
+            
+            // Add click event to switch to this virtue
+            li.addEventListener('click', function() {
+                switchToVirtue(index);
+            });
+            
+            virtueListElement.appendChild(li);
         });
-        
-        virtueListElement.appendChild(li);
-    });
-}
+    }
 
-// Switch to a different virtue
-function switchToVirtue(index) {
-    // Save current notes
-    saveNotes();
-    
-    // Update current index
-    currentWeekIndex = index;
-    
-    // Update UI
-    updateWeekDisplay();
-    updateVirtueDisplay();
-    renderDayCells();
-    renderVirtueList();
-    
-    // Save the change
-    saveData();
-    
-    // Update notifications if enabled
-    if (notificationsEnabled) {
+    // Switch to a different virtue
+    function switchToVirtue(index) {
+        // Save current notes
+        saveNotes();
+        
+        // Update current index
+        currentWeekIndex = index;
+        
+        // Update UI
+        updateWeekDisplay();
+        updateVirtueDisplay();
+        renderDayCells();
+        renderVirtueList();
+        
+        // Save the change
+        saveData();
+        
+        // Update notifications if enabled
+        if (notificationsEnabled) {
+            scheduleNotifications();
+        }
+    }
+
+    // Save the current notes
+    function saveNotes() {
+        if (virtueNotesElement) {
+            const noteKey = `virtue_${currentWeekIndex}`;
+            notes[noteKey] = virtueNotesElement.value;
+            saveData();
+        }
+    }
+
+    // Set up event listeners
+    function setupEventListeners() {
+        console.log('Setting up event listeners...');
+        
+        // Navigation buttons
+        if (prevWeekButton) {
+            prevWeekButton.addEventListener('click', function() {
+                saveNotes();
+                currentWeekIndex = (currentWeekIndex - 1 + 13) % 13;
+                updateWeekDisplay();
+                updateVirtueDisplay();
+                renderDayCells();
+                renderVirtueList();
+                saveData();
+                
+                if (notificationsEnabled) {
+                    scheduleNotifications();
+                }
+            });
+        }
+        
+        if (nextWeekButton) {
+            nextWeekButton.addEventListener('click', function() {
+                saveNotes();
+                currentWeekIndex = (currentWeekIndex + 1) % 13;
+                updateWeekDisplay();
+                updateVirtueDisplay();
+                renderDayCells();
+                renderVirtueList();
+                saveData();
+                
+                if (notificationsEnabled) {
+                    scheduleNotifications();
+                }
+            });
+        }
+        
+        // Toggle examples
+        if (toggleExamplesButton && examplesContainer) {
+            toggleExamplesButton.addEventListener('click', function() {
+                if (examplesContainer.classList.contains('hidden')) {
+                    examplesContainer.classList.remove('hidden');
+                    toggleExamplesButton.textContent = 'Hide Examples';
+                } else {
+                    examplesContainer.classList.add('hidden');
+                    toggleExamplesButton.textContent = 'Show Examples';
+                }
+            });
+        }
+        
+        // Save notes when textarea changes
+        if (virtueNotesElement) {
+            virtueNotesElement.addEventListener('blur', saveNotes);
+            // Also save on input with a debounce
+            let timeout;
+            virtueNotesElement.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(saveNotes, 1000);
+            });
+        }
+        
+        // Notification switch
+        if (notificationSwitch) {
+            notificationSwitch.addEventListener('change', function() {
+                if (notificationSwitch.checked) {
+                    requestNotificationPermission();
+                } else {
+                    disableNotifications();
+                }
+            });
+        }
+        
+        // Notification modal buttons
+        if (allowNotificationsButton) {
+            allowNotificationsButton.addEventListener('click', function() {
+                requestNotificationPermissionAPI();
+                if (notificationModal) {
+                    notificationModal.classList.add('hidden');
+                }
+            });
+        }
+        
+        if (denyNotificationsButton && notificationModal) {
+            denyNotificationsButton.addEventListener('click', function() {
+                notificationModal.classList.add('hidden');
+                if (notificationSwitch) {
+                    notificationSwitch.checked = false;
+                }
+            });
+        }
+        
+        console.log('Event listeners set up');
+    }
+
+    // Check notification permission
+    function checkNotificationPermission() {
+        if (!('Notification' in window)) {
+            // Notifications not supported
+            if (notificationSwitch) {
+                notificationSwitch.checked = false;
+                notificationSwitch.disabled = true;
+            }
+            return;
+        }
+        
+        if (Notification.permission === 'granted') {
+            // We already have permission, restore notifications if they were enabled
+            if (notificationsEnabled) {
+                scheduleNotifications();
+            }
+        } else if (Notification.permission !== 'denied') {
+            // We haven't asked yet
+            if (notificationsEnabled && notificationModal) {
+                // Show modal to request permission
+                notificationModal.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Request notification permission (show modal first)
+    function requestNotificationPermission() {
+        if (!('Notification' in window)) {
+            return;
+        }
+        
+        if (Notification.permission === 'granted') {
+            enableNotifications();
+        } else if (Notification.permission !== 'denied' && notificationModal) {
+            notificationModal.classList.remove('hidden');
+        } else {
+            // Permission was denied
+            if (notificationSwitch) {
+                notificationSwitch.checked = false;
+            }
+            alert('Notification permission was denied. Please enable notifications in your browser settings to receive daily reminders.');
+        }
+    }
+
+    // Request notification permission API call
+    function requestNotificationPermissionAPI() {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                enableNotifications();
+            } else if (notificationSwitch) {
+                notificationSwitch.checked = false;
+            }
+        });
+    }
+
+    // Enable notifications
+    function enableNotifications() {
+        notificationsEnabled = true;
+        if (notificationSwitch) {
+            notificationSwitch.checked = true;
+        }
+        saveData();
         scheduleNotifications();
     }
-}
 
-// Save the current notes
-function saveNotes() {
-    const noteKey = `virtue_${currentWeekIndex}`;
-    notes[noteKey] = virtueNotesElement.value;
-    saveData();
-}
-
-// Set up event listeners
-function setupEventListeners() {
-    // Navigation buttons
-    prevWeekButton.addEventListener('click', () => {
-        saveNotes();
-        currentWeekIndex = (currentWeekIndex - 1 + 13) % 13;
-        updateWeekDisplay();
-        updateVirtueDisplay();
-        renderDayCells();
-        renderVirtueList();
-        saveData();
-        
-        if (notificationsEnabled) {
-            scheduleNotifications();
-        }
-    });
-    
-    nextWeekButton.addEventListener('click', () => {
-        saveNotes();
-        currentWeekIndex = (currentWeekIndex + 1) % 13;
-        updateWeekDisplay();
-        updateVirtueDisplay();
-        renderDayCells();
-        renderVirtueList();
-        saveData();
-        
-        if (notificationsEnabled) {
-            scheduleNotifications();
-        }
-    });
-    
-    // Toggle examples
-    toggleExamplesButton.addEventListener('click', () => {
-        if (examplesContainer.classList.contains('hidden')) {
-            examplesContainer.classList.remove('hidden');
-            toggleExamplesButton.textContent = 'Hide Examples';
-        } else {
-            examplesContainer.classList.add('hidden');
-            toggleExamplesButton.textContent = 'Show Examples';
-        }
-    });
-    
-    // Save notes when textarea changes
-    virtueNotesElement.addEventListener('blur', saveNotes);
-    
-    // Notification switch
-    notificationSwitch.addEventListener('change', () => {
-        if (notificationSwitch.checked) {
-            requestNotificationPermission();
-        } else {
-            disableNotifications();
-        }
-    });
-    
-    // Notification modal buttons
-    allowNotificationsButton.addEventListener('click', () => {
-        requestNotificationPermissionAPI();
-        notificationModal.classList.add('hidden');
-    });
-    
-    denyNotificationsButton.addEventListener('click', () => {
-        notificationModal.classList.add('hidden');
-        notificationSwitch.checked = false;
-    });
-}
-
-// Check notification permission
-function checkNotificationPermission() {
-    if (!('Notification' in window)) {
-        // Notifications not supported
-        notificationSwitch.checked = false;
-        notificationSwitch.disabled = true;
-        return;
-    }
-    
-    if (Notification.permission === 'granted') {
-        // We already have permission, restore notifications if they were enabled
-        if (notificationsEnabled) {
-            scheduleNotifications();
-        }
-    } else if (Notification.permission !== 'denied') {
-        // We haven't asked yet
-        if (notificationsEnabled) {
-            // Show modal to request permission
-            notificationModal.classList.remove('hidden');
-        }
-    }
-}
-
-// Request notification permission (show modal first)
-function requestNotificationPermission() {
-    if (!('Notification' in window)) {
-        return;
-    }
-    
-    if (Notification.permission === 'granted') {
-        enableNotifications();
-    } else if (Notification.permission !== 'denied') {
-        notificationModal.classList.remove('hidden');
-    } else {
-        // Permission was denied
-        notificationSwitch.checked = false;
-        alert('Notification permission was denied. Please enable notifications in your browser settings to receive daily reminders.');
-    }
-}
-
-// Request notification permission API call
-function requestNotificationPermissionAPI() {
-    Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-            enableNotifications();
-        } else {
+    // Disable notifications
+    function disableNotifications() {
+        notificationsEnabled = false;
+        if (notificationSwitch) {
             notificationSwitch.checked = false;
         }
-    });
-}
+        saveData();
+        
+        // Clear any scheduled notifications
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+                type: 'CLEAR_NOTIFICATIONS'
+            });
+        }
+    }
 
-// Enable notifications
-function enableNotifications() {
-    notificationsEnabled = true;
-    notificationSwitch.checked = true;
-    saveData();
-    scheduleNotifications();
-}
-
-// Disable notifications
-function disableNotifications() {
-    notificationsEnabled = false;
-    notificationSwitch.checked = false;
-    saveData();
-    
-    // Clear any scheduled notifications
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    // Schedule notifications for the current virtue
+    function scheduleNotifications() {
+        if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
+            return;
+        }
+        
+        const currentVirtue = virtuesData[currentWeekIndex];
+        
         navigator.serviceWorker.controller.postMessage({
-            type: 'CLEAR_NOTIFICATIONS'
+            type: 'SCHEDULE_NOTIFICATIONS',
+            data: {
+                virtueName: currentVirtue.name,
+                virtueDesc: currentVirtue.desc
+            }
         });
     }
-}
-
-// Schedule notifications for the current virtue
-function scheduleNotifications() {
-    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) {
-        return;
-    }
-    
-    const currentVirtue = virtuesData[currentWeekIndex];
-    
-    navigator.serviceWorker.controller.postMessage({
-        type: 'SCHEDULE_NOTIFICATIONS',
-        data: {
-            virtueName: currentVirtue.name,
-            virtueDesc: currentVirtue.desc
-        }
-    });
-}
-
-// Initialize the app when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
+});
